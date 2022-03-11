@@ -1,10 +1,40 @@
 <template>
-  <h1> {{test}} </h1>
-  <form @submit.prevent="SendMessage">
-    <h4> {{spontaneousAlert}} </h4>
-    <input type="text" name="" id="" @click="ShowAlert" v-model="message">
-    <input type="submit" value="send" @submit="SendMessage">
-  </form>
+  <div v-show="nameBox">
+    <div class="jumbotron">
+      <h1 class="display-4 text-light">Welcome to Tavis Chat</h1>
+      <p class="lead text-light">Enter a username here to be able to chat</p>
+      <hr class="my-4" style="color: dodgerblue;">
+      <p class="lead">
+        <a class="btn btn-primary btn-lg" href="https://github.com/TavisMac1?tab=repositories" role="button">Github</a>
+      </p>
+    </div>
+    <form @submit.prevent="SendName">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text bg-primary">&#9889;</span>
+        </div>
+        <input v-model="name" placeholder="Username" type="text" class="form-control bg-light" aria-label="Amount (to the nearest dollar)">
+        <input @submit="SendName" placeholder="Submit name" type="submit" class="form-control bg-light" aria-label="Amount (to the nearest dollar)">
+        <div class="input-group-append">
+          <span class="input-group-text bg-primary">&#9749;</span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div v-show="canChat">
+    <div class="card" style="width: 18rem; margin-right: auto; margin-left: auto;">
+      <div class="card-header">
+        Chat room! {{spontaneousAlert}}
+      </div>
+      <ul class="list-group list-group-flush" v-for="msg in bank" :key="msg">
+        <li class="list-group-item">{{msg}}</li>
+      </ul>
+    </div>
+    <form @submit.prevent="SendMessage">
+      <input type="text" name="" id="" v-model="message"> 
+      <input type="submit" class="btn btn-primary" value="send" @submit="SendMessage">
+    </form>
+  </div>
 </template>
 
 <script>
@@ -13,22 +43,36 @@ export default {
  data() {
    return {
       spontaneousAlert: "",
-      message: 'Hello',
-      messageBank: []
+      message: null,
+      name: null,
+      canChat: false,
+      nameBox: true,
+      bank: [],
    }
  },
  methods: {
-   ShowAlert() {
-     this.spontaneousAlert = "Type a message and press submit to send it"
+   ShowAlert(para) {
+     this.spontaneousAlert = para
    },
-   ShowText() {
-        this.test = ""
+    SendName() {
+        if (this.name && this.name != null) {
+          this.bank.push(this.name)
+          console.log("Name added to array successfully");
+          this.canChat = true
+          this.nameBox = false
+        } else {
+          console.log("named failed")
+          this.nameBox = true
+        }
       },
    SendMessage() {
-        if (this.test != "" || this.test != null) {
-          this.messageBank.push(this.test)
+        if (this.message && this.message != null) {
+          this.bank.push(this.message, Date.now())
           console.log("Message added to array successfully");
-          console.log(this.messageBank[0])
+          this.ShowAlert("Message passed")
+          this.message = ''
+        } else {
+          this.ShowAlert("Message failed conditional check, please provide an message")
         }
       },
  }
