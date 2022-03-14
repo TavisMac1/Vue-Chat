@@ -22,23 +22,24 @@
     </form>
   </div>
   <div v-show="canChat">
-    <div class="card" style="width: 18rem; margin-right: auto; margin-left: auto;">
+    <div class="card" style="width: 30rem; margin-right: auto; margin-left: auto; over-flow: hidden;">
       <div class="card-header">
         Chat room! {{spontaneousAlert}}
       </div>
-      <ul class="list-group list-group-flush" v-for="msg in bank" :key="msg">
-        <li class="list-group-item">{{msg}}</li>
+      <ul class="list-group list-group-flush" style="over-flow: hidden;" v-for="msg in bank" :key="msg">
+        <li class="list-group-item">from: {{msg.userName}} | @{{toDate.toLocaleDateString("hi-IN", msg.createdAt)}} | content: {{msg.message}}</li>
       </ul>
     </div>
     <form @submit.prevent="SendMessage">
       <input type="text" name="" id="" v-model="message"> 
-      <input type="submit" class="btn btn-primary" value="send" @submit="SendMessage">
+      <input type="submit" class="btn btn-primary" value="send" @submit="[SendMessage, create]">
     </form>
   </div>
 </template>
 
 <script>
-
+import axios from 'axios'
+window.axios = require('axios')
 export default {
  data() {
    return {
@@ -48,6 +49,8 @@ export default {
       canChat: false,
       nameBox: true,
       bank: [],
+      mData: null,
+      toDate: new Date()
    }
  },
  methods: {
@@ -65,9 +68,9 @@ export default {
           this.nameBox = true
         }
       },
-   SendMessage() {
+    SendMessage() {
         if (this.message && this.message != null) {
-          this.bank.push(this.message, Date.now())
+          this.bank.push(this.message)
           console.log("Message added to array successfully");
           this.ShowAlert("Message passed")
           this.message = ''
@@ -75,6 +78,13 @@ export default {
           this.ShowAlert("Message failed conditional check, please provide an message")
         }
       },
+    create() {
+        //await Service.make
+      }
+ },
+ mounted: function() {
+   axios.get('http://localhost:3000/messages')
+    .then(res => this.bank = res.data)
  }
 }
 </script>
