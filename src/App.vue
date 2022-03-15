@@ -3,6 +3,9 @@
   <div v-if="err" class="alert alert-danger" role="alert">
     {{spontaneousAlert}} &#10062;
   </div>
+  <div v-if="deleteSuccess" class="alert alert-primary" role="alert">
+    Message deleted successfully
+  </div>
   <div v-show="nameBox">
     <div class="jumbotron">
       <h1 class="display-4 text-light">Welcome to Tavis Chat</h1>
@@ -31,10 +34,10 @@
         Tavis chat &#10024;
       </div>
       <ul class="list-group list-group-flush bg-dark" style="over-flow: hidden;" v-for="msg in bank" :key="msg">
-        <li class="list-group-item bg-dark text-light"> <span class="border border-primary">from: {{msg.userName}} | </span> 
-        <span class="border border-primary">@{{toDate.toLocaleDateString("hi-IN", msg.createdAt)}} | </span>
-        <span class=" border border-primary"> content: {{msg.message}} </span>
-        <button type="button" class="close" aria-label="Close">
+        <li class="list-group-item bg-dark text-light"> {{msg.userName}} |
+        @{{toDate.toLocaleDateString("hi-IN", msg.createdAt)}} |
+        content: {{msg.message}} | id: {{msg._id}}
+        <button type="button" class="close" aria-label="Close" @click="RemoveEntry(msg._id)">
           <span aria-hidden="true">&times;</span>
         </button>
         </li>
@@ -65,6 +68,7 @@ export default {
       mData: null,
       toDate: new Date(),
       err: false,
+      deleteSuccess: false,
    }
  },
  methods: {
@@ -86,7 +90,7 @@ export default {
         if (this.message && this.message != null) {
           console.log("Message added to array successfully");
           this.ShowAlert("Message passed")
-          
+
           axios.post('http://localhost:3000/add-msg', { // make post request to api to submit data to DB
             username: this.name,
             msg: this.message
@@ -100,8 +104,20 @@ export default {
           this.ShowAlert("Message failed conditional check, please provide a message")
         }
       },
-    create() {
-        //await Service.make
+      RemoveEntry(temp) {
+        console.log(temp)
+        axios.delete("http://localhost:3000/remove/" + temp)
+        .then((res) => {
+          this.deleteSuccess = res.data
+          this.bank = []
+          axios.get('http://localhost:3000/messages')
+          .then(res => this.bank = res.data)
+          .catch((err) => {
+            console.log(err)
+          })
+        }).catch((err) => {
+          console.log(err)
+        })
       }
  },
  mounted: function() { // get the messages when loading into the app

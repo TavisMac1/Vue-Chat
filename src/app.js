@@ -54,6 +54,15 @@ app.post('/add-msg', (req, res) => {
         })
 })
 
+app.delete('/remove/:id', (req, res) => {
+    const id = req.params.id;
+
+    Post.findByIdAndDelete(id)
+    .then(result => {
+        'true'
+    })
+})
+
 app.get('/', (req, res) => {
     res.send('<h1>  OI </h1>');
     console.log('running')
