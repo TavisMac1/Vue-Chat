@@ -1,4 +1,8 @@
 <template>
+<NavBar/>
+  <div v-if="err" class="alert alert-danger" role="alert">
+    {{spontaneousAlert}} &#10062;
+  </div>
   <div v-show="nameBox">
     <div class="jumbotron">
       <h1 class="display-4 text-light">Welcome to Tavis Chat</h1>
@@ -22,25 +26,34 @@
     </form>
   </div>
   <div v-show="canChat">
-    <div class="card" style="width: 30rem; margin-right: auto; margin-left: auto; over-flow: hidden;">
-      <div class="card-header">
-        Chat room! {{spontaneousAlert}}
+    <div class="card bg-dark text-light" style="width: 100rem; margin-right: auto; margin-left: auto; over-flow: hidden;">
+      <div class="card-header bg-primary text-light">
+        Tavis chat &#10024;
       </div>
-      <ul class="list-group list-group-flush" style="over-flow: hidden;" v-for="msg in bank" :key="msg">
-        <li class="list-group-item">from: {{msg.userName}} | @{{toDate.toLocaleDateString("hi-IN", msg.createdAt)}} | content: {{msg.message}}</li>
+      <ul class="list-group list-group-flush bg-dark" style="over-flow: hidden;" v-for="msg in bank" :key="msg">
+        <li class="list-group-item bg-dark text-light"> <span class="border border-primary">from: {{msg.userName}} | </span> 
+        <span class="border border-primary">@{{toDate.toLocaleDateString("hi-IN", msg.createdAt)}} | </span>
+        <span class=" border border-primary"> content: {{msg.message}} </span>
+        <button type="button" class="close" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        </li>
       </ul>
     </div>
-    <form @submit.prevent="SendMessage">
-      <input type="text" name="" id="" v-model="message"> 
-      <input type="submit" class="btn btn-primary" value="send" @submit="[SendMessage, create]">
+    <form @submit.prevent="SendMessage" style="float: left; margin-left: 160px;">
+      <input type="text" :value="name" hidden name="username" id="">  
+      <input type="text" style="width: 700px;" name="msg" id="" v-model="message">
+      <input type="submit" class="btn btn-primary" value="send" @submit="SendMessage">
     </form>
   </div>
 </template>
 
 <script>
+import NavBar from './components/NavBar.vue'
 import axios from 'axios'
 window.axios = require('axios')
 export default {
+  components: { NavBar },
  data() {
    return {
       spontaneousAlert: "",
@@ -50,7 +63,8 @@ export default {
       nameBox: true,
       bank: [],
       mData: null,
-      toDate: new Date()
+      toDate: new Date(),
+      err: false,
    }
  },
  methods: {
@@ -59,30 +73,38 @@ export default {
    },
     SendName() {
         if (this.name && this.name != null) {
-          this.bank.push(this.name)
           console.log("Name added to array successfully");
           this.canChat = true
           this.nameBox = false
         } else {
           console.log("named failed")
           this.nameBox = true
+          this.err = true
         }
       },
-    SendMessage() {
+      SendMessage() { //validtae messages and send messages to DB
         if (this.message && this.message != null) {
-          this.bank.push(this.message)
           console.log("Message added to array successfully");
           this.ShowAlert("Message passed")
+          
+          axios.post('http://localhost:3000/add-msg', { // make post request to api to submit data to DB
+            username: this.name,
+            msg: this.message
+          }) .then((response) => { //get response from DB which is the values just submitted, push to array
+            this.bank.push(response.data)
+          });
+
           this.message = ''
         } else {
-          this.ShowAlert("Message failed conditional check, please provide an message")
+          this.err = true
+          this.ShowAlert("Message failed conditional check, please provide a message")
         }
       },
     create() {
         //await Service.make
       }
  },
- mounted: function() {
+ mounted: function() { // get the messages when loading into the app
    axios.get('http://localhost:3000/messages')
     .then(res => this.bank = res.data)
  }
@@ -96,6 +118,5 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
