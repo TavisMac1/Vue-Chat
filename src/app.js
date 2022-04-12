@@ -13,22 +13,6 @@ mongoose.connect(dburi, {useNewUrlParser: true, useUnifiedTopology: true})
     .then((result) => app.listen(3000), console.log('connected to db'))
     .catch((err) => console.log(err))
 
-
-    /*
-app.get('/add-msg', (req, res) => { //create new model to add data
-    const postMsg = new Post({
-        userName: 'tavis tester',
-        message: 'hello again from mongo'
-    });
-    postMsg.save()
-        .then((result) => {
-            res.send(result)
-        })
-        .catch((err) => {
-            console.log(err)
-        })
-}) */
-
 app.get('/messages', (req, res) => {
     Post.find()
         .then((result) => {
@@ -59,7 +43,10 @@ app.delete('/remove/:id', (req, res) => {
 
     Post.findByIdAndDelete(id)
     .then(result => {
-        'true'
+        console.log('Message deletion')
+        return true
+    }).catch((err) => {
+        if (err) console.log(err)
     })
 })
 
